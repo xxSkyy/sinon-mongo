@@ -11,7 +11,7 @@ import Sinon, { SinonStatic } from "sinon"
 
 const install = (sinon: SinonStatic) => {
   // Helpers to create stubs of MongoClient, Db and Collection
-  const mongoClient = (databases?: SMDatabases, methodStubs?) => {
+  const mongoClient = (databases?: SMDatabases, methodStubs?): StubMongoClient => {
     const dbGetterStub = sinon.stub()
     dbGetterStub.returns(sinonMongo.db())
     if (databases) {
@@ -40,7 +40,7 @@ const install = (sinon: SinonStatic) => {
     return stubMongoClient
   }
 
-  const db = (collections?: SMCollections, methodStubs?) => {
+  const db = (collections?: SMCollections, methodStubs?): Db => {
     const collectionGetterStub = sinon.stub()
     collectionGetterStub.returns(sinonMongo.collection())
     if (collections) {
@@ -59,7 +59,8 @@ const install = (sinon: SinonStatic) => {
     )
   }
 
-  const collection = (methodStubs?) =>
+  /// @ts-ignore It's fine, same as in mongodb
+  const collection = (methodStubs?):Collection<Document> =>
     sinon.createStubInstance(Collection, methodStubs)
 
   // Helpers to create array/stream results for collection operations
@@ -84,6 +85,7 @@ const install = (sinon: SinonStatic) => {
     readableStream.push(null)
 
     // mimick mongo API for collection methods. By default methods return a stream but it also has an explicit stream() method
+    // TODO: Check this typings
     /// @ts-ignore
     readableStream.stream = () => readableStream
     return readableStream
