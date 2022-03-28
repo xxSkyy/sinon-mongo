@@ -1,6 +1,6 @@
 # Forked sinon-mongo library by [Daniel](https://github.com/DaniJG) with added typings for sinon.mongo
 
-# sinon-mongo
+# sinon-mongo-ts
 
 Extend [sinon.js](https://sinonjs.org/) with stubs for testing code that uses the MongoDB [Node.js driver](https://mongodb.github.io/node-mongodb-native/4.0/index.html)
 
@@ -13,7 +13,7 @@ Extend [sinon.js](https://sinonjs.org/) with stubs for testing code that uses th
 ## Installation
 
 ```sh
-$ npm install sinon-mongo
+$ yarn add -D sinon-mongo-ts
 ```
 
 > sinon-mongo expects sinon >=6.3.0 and mongodb >=4.X as **peer-dependencies**.
@@ -22,11 +22,11 @@ $ npm install sinon-mongo
 
 ## Usage
 
-Simply `require('sinon-mongo')` to extend sinon with a `sinon.mongo` object.
+Simply `import "sinon-mongo-ts"` to extend sinon with a `sinon.mongo` object.
 
 ```js
 const sinon = require("sinon")
-require("sinon-mongo")
+import "sinon-mongo-ts"
 // sinon.mongo is now available!
 ```
 
