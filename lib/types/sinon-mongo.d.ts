@@ -20,7 +20,10 @@ declare module "sinon" {
     }
 }
 declare type StubbedInstance = Sinon.SinonStubbedInstance<MongoClient>;
-export declare type StubMongoClient = Omit<StubbedInstance, "connect"> & {
+export declare type StubMongoClient = Omit<StubbedInstance, "connect" | "startSession"> & {
+    startSession(): {
+        withTransaction(transactionFunction: Function): any;
+    };
     connect: Sinon.SinonStub<any[], any>;
 };
 export declare type SMDatabases = {

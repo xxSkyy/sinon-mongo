@@ -1,1 +1,1 @@
-{"version":3,"file":"sinon-mongo.d.ts","sourceRoot":"","sources":["../src/sinon-mongo.ts"],"names":[],"mappings":"AASA,OAAc,EAAE,WAAW,EAAE,MAAM,OAAO,CAAA;AAE1C,QAAA,MAAM,OAAO,UAAW,WAAW,SAmFlC,CAAA;AAED,OAAO,EAAE,OAAO,EAAE,CAAA"}
+{"version":3,"file":"sinon-mongo.d.ts","sourceRoot":"","sources":["../src/sinon-mongo.ts"],"names":[],"mappings":"AASA,OAAc,EAAE,WAAW,EAAE,MAAM,OAAO,CAAA;AAE1C,QAAA,MAAM,OAAO,UAAW,WAAW,SAwFlC,CAAA;AAED,OAAO,EAAE,OAAO,EAAE,CAAA"}
