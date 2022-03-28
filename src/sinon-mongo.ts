@@ -44,7 +44,10 @@ const install = (sinon: SinonStatic) => {
     return stubMongoClient
   }
 
-  const db = (collections?: SMCollections, methodStubs?): Db => {
+  const db = (
+    collections?: SMCollections,
+    methodStubs?
+  ): Sinon.SinonStubbedInstance<Db> => {
     const collectionGetterStub = sinon.stub()
     collectionGetterStub.returns(sinonMongo.collection())
     if (collections) {
@@ -64,7 +67,9 @@ const install = (sinon: SinonStatic) => {
   }
 
   /// @ts-ignore It's fine, same as in mongodb
-  const collection = (methodStubs?): Collection<Document> =>
+  const collection = (
+    methodStubs?
+  ): Sinon.SinonStubbedInstance<Collection<any>> =>
     sinon.createStubInstance(Collection, methodStubs)
 
   // Helpers to create array/stream results for collection operations

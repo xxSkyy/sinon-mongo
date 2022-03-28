@@ -1,6 +1,6 @@
-# Forked sinon-mongo library by [Daniel](https://github.com/DaniJG) with added typings for sinon.mongo
-
 # sinon-mongo-ts
+
+Forked sinon-mongo library by [Daniel](https://github.com/DaniJG) with added typings for sinon.mongo and smaller fixes like transaction support.
 
 Extend [sinon.js](https://sinonjs.org/) with stubs for testing code that uses the MongoDB [Node.js driver](https://mongodb.github.io/node-mongodb-native/4.0/index.html)
 
@@ -32,49 +32,112 @@ import "sinon-mongo-ts"
 
 Then use `sinon.mongo` to create stubs of various classes in the mongo API.
 
+## **Important!** when stubbing collections don't create stub while defining collection like:
+
+```js
+const mockCollection = sinon.mongo.collection({
+  findOne: sinon
+    .stub()
+    .withArgs({ name: "foo" })
+    .resolves({ value: { a: "mock object" } }),
+})
+// every call to mockCollection.findOne will result in {value: {a: 'mock object'}} promise returned
+mockCollection.findOne
+  .withArgs({ name: "bar" })
+  .resolves({ value: { a: "another object" } })
+
+// Will cause
+const result = await mockCollection.findOne({ name: "foo" })
+console.log(result)
+//  {a: 'mock object'}
+
+const result2 = await mockCollection.findOne({ name: "bar" })
+console.log(result2)
+//  {a: 'mock object'}
+
+const result3 = await mockCollection.findOne({ name: "anything" })
+console.log(result3)
+//  {a: 'mock object'}
+```
+
+## It's caused by `sinon`, and quick solution for it for now is
+
+```js
+// Leave collection empty or with empty stubs
+const mockCollection = sinon.mongo.collection()
+// Under collection definiton define queries
+mockCollection.findOne
+  .withArgs({ name: "foo" })
+  .resolves({ value: { a: "mock object" } })
+mockCollection.findOne
+  .withArgs({ name: "bar" })
+  .resolves({ value: { a: "another object" } })
+
+// And then
+
+const result = await mockCollection.findOne({ name: "foo" })
+console.log(result)
+//  {a: 'mock object'}
+
+const result2 = await mockCollection.findOne({ name: "bar" })
+console.log(result2)
+//  {a: 'another object'}
+
+const result3 = await mockCollection.findOne({ name: "anything" })
+console.log(result3)
+//  undefined
+```
+
+---
+
+## Examples / Best Typescript practices
+
 ```js
 // ---- stub collections ----
-const mockCollection = sinon.mongo.collection({
-  // optionally specific stubs defined when creating the stub collection
-  findOneAndUpdate: sinon.stub().withArgs({name: 'foo'}).resolves({value: {a: 'mock object'}});
-});
+const mockCollection = sinon.mongo.collection()
 // By default, every collection method is also a sinon stub
-mockCollection.findOne.withArgs({name: 'foo'}).resolves({a: 'mock object'});
+mockCollection.findOneAndUpdate
+  .withArgs({ name: "foo" })
+  .resolves({ value: { a: "mock object" } })
 
+mockCollection.findOne.withArgs({ name: "foo" }).resolves({ a: "mock object" })
 
 // ---- stub databases ----
 const mockDb = sinon.mongo.db({
-  // optionally provide a specific map of collection names and stubs
-  customers: sinon.mongo.collection()
-});
-// By default, every Db method is also a sinon stub, including the collection() method
-mockDb.collection.withArgs('organizations').returns({the: 'mock organizations collection'});
+  customers: mockCollection,
+})
 
+// You can define if needed queries through mockDb but this ones are not supported
+// by typescript
+// IE
+//
+// mockDb.collection("customers").findOne.withArgs({name: "bar"}).resolves({a: "another object"})
+//
+// will work but cause typescript error, best practice is to do changes through colelction
+// definition.
 
 // ---- stub MongoClients ---
 const mockMongoClient = sinon.mongo.mongoClient({
   // optionally provide a specific map of database names and stubs
-  reporting: sinon.mongo.db()
-});
+  reporting: sinon.mongo.db(),
+})
 // By default, every MongoClient method is also a sinon stub, including the db() method
-mockMongoClient.db.withArgs('myDbName').returns({the: 'mock database'});
+mockMongoClient.db.withArgs("myDbName").returns({ the: "mock database" })
 // The connect method stub is already setup so it resolves with the mongoClient and can be chained
-mockMongoClient.connect().then(mongoClient => mongoClient.db('myDbName'));
+mockMongoClient.connect().then((mongoClient) => mongoClient.db("myDbName"))
 
-// Also basic stubbed transactions works
+// Also with Typescript version I added stubbing basic transactions functionality
 const session = mockMongoClient.startSession()
 
 try {
   await session.withTransaction(async () => {
     console.log("session")
-
   })
-}catch(e){
+} catch (e) {
   console.error("error: ", e)
-}finally {
+} finally {
   session.endSession()
 }
-
 ```
 
 ## API

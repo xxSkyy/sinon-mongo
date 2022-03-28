@@ -2,10 +2,15 @@ import { Collection, Db, MongoClient } from "mongodb"
 import Sinon from "sinon"
 import * as Stream from "stream"
 
+//
+
 export type SinonMongo = {
   mongoClient: (databases?: SMDatabases, methodStubs?: any) => StubMongoClient
-  db: (collections?: SMCollections, methodStubs?: any) => Db
-  collection: (methodStubs?: any) => Collection<Document>
+  db: (
+    collections?: SMCollections,
+    methodStubs?: any
+  ) => Sinon.SinonStubbedInstance<Db>
+  collection: (methodStubs?: any) => Sinon.SinonStubbedInstance<Collection<any>>
   documentArray: (result?: any) => {
     limit?: any
     skip?: any
@@ -48,9 +53,7 @@ export type SMDatabases = {
 export type SMCollections =
   | string
   | {
-      [key: string]: {
-        [key: string]: string
-      }
+      [key: string]: Sinon.SinonStubbedInstance<Collection<any>>
     }
 
 type SMDocumentStreamItem = {
