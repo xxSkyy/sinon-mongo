@@ -61,6 +61,20 @@ mockMongoClient.db.withArgs('myDbName').returns({the: 'mock database'});
 // The connect method stub is already setup so it resolves with the mongoClient and can be chained
 mockMongoClient.connect().then(mongoClient => mongoClient.db('myDbName'));
 
+// Also basic stubbed transactions works
+const session = mockMongoClient.startSession()
+
+try {
+  await session.withTransaction(async () => {
+    console.log("session")
+
+  })
+}catch(e){
+  console.error("error: ", e)
+}finally {
+  session.endSession()
+}
+
 ```
 
 ## API

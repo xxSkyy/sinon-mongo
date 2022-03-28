@@ -39,6 +39,8 @@ describe("sinon-mongo", () => {
             wasCalled = true
           })
 
+          expect(session.endSession).to.be.a("function")
+
           expect(wasCalled).to.be.true
         })
 

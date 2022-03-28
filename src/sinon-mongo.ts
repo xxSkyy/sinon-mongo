@@ -34,6 +34,7 @@ const install = (sinon: SinonStatic) => {
 
     stubMongoClient.startSession = () => ({
       withTransaction: async (f) => await f(),
+      endSession: () => {},
     })
 
     return stubMongoClient

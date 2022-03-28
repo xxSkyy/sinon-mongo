@@ -32,6 +32,7 @@ export type StubMongoClient = Omit<
 > & {
   startSession(): {
     withTransaction(transactionFunction: Function)
+    endSession()
   }
   connect: Sinon.SinonStub<any[], any>
 }
