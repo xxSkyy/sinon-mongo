@@ -91,7 +91,7 @@ const install = (sinon: SinonStatic) => {
     documentStream,
   }
 
-  sinon.mongo = sinon.mongo || sinonMongo
+  sinon.mongo = sinon?.mongo || sinonMongo
 }
 
 export { install }
