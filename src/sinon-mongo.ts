@@ -5,13 +5,17 @@ import {
   SMCollections,
   SMDatabases,
   SMDocumentStream,
+  SMReadableStream,
   StubMongoClient,
 } from "./types/sinon-mongo"
 import Sinon, { SinonStatic } from "sinon"
 
 const install = (sinon: SinonStatic) => {
   // Helpers to create stubs of MongoClient, Db and Collection
-  const mongoClient = (databases?: SMDatabases, methodStubs?): StubMongoClient => {
+  const mongoClient = (
+    databases?: SMDatabases,
+    methodStubs?
+  ): StubMongoClient => {
     const dbGetterStub = sinon.stub()
     dbGetterStub.returns(sinonMongo.db())
     if (databases) {
@@ -60,11 +64,11 @@ const install = (sinon: SinonStatic) => {
   }
 
   /// @ts-ignore It's fine, same as in mongodb
-  const collection = (methodStubs?):Collection<Document> =>
+  const collection = (methodStubs?): Collection<Document> =>
     sinon.createStubInstance(Collection, methodStubs)
 
   // Helpers to create array/stream results for collection operations
-  const documentArray = (result) => {
+  const documentArray = (result?) => {
     if (!result) result = []
     if (result.constructor !== Array) result = [result]
 
@@ -76,7 +80,7 @@ const install = (sinon: SinonStatic) => {
     }
   }
 
-  const documentStream = (result?: SMDocumentStream) => {
+  const documentStream = (result?: SMDocumentStream): SMReadableStream => {
     if (!result) result = []
     if (!Array.isArray(result)) result = [result]
 
@@ -84,10 +88,13 @@ const install = (sinon: SinonStatic) => {
     result.forEach((item) => readableStream.push(item))
     readableStream.push(null)
 
+    readableStream
+
     // mimick mongo API for collection methods. By default methods return a stream but it also has an explicit stream() method
-    // TODO: Check this typings
+    // TODO: Ignore for now, later will check it
     /// @ts-ignore
     readableStream.stream = () => readableStream
+    /// @ts-ignore
     return readableStream
   }
 

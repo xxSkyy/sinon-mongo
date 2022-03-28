@@ -1,18 +1,18 @@
-import { MongoClient } from "mongodb"
+import { Collection, Db, MongoClient } from "mongodb"
 import Sinon from "sinon"
 import * as Stream from "stream"
 
 export type SinonMongo = {
-  mongoClient: (databases?: any, methodStubs?: any) => any
-  db: (collections?: any, methodStubs?: any) => any
-  collection: (methodStubs?: any) => any
+  mongoClient: (databases?: SMDatabases, methodStubs?: any) => StubMongoClient
+  db: (collections?: SMCollections, methodStubs?: any) => Db
+  collection: (methodStubs?: any) => Collection<Document>
   documentArray: (result?: any) => {
     limit?: any
     skip?: any
     sort?: any
     toArray: () => Promise<any>
   }
-  documentStream: (result?: any) => Stream.Readable
+  documentStream: (result?: SMDocumentStream) => SMReadableStream
 }
 
 // interface SinonExtended extends SinonStatic {
@@ -23,6 +23,10 @@ declare module "sinon" {
   export interface SinonApi {
     mongo: SinonMongo
   }
+}
+
+export type SMReadableStream = Stream.Readable & {
+  stream: Stream.Readable
 }
 
 type StubbedInstance = Sinon.SinonStubbedInstance<MongoClient>
