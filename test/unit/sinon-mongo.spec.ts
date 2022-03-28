@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const expect = require('chai').expect;
 const { MongoClient, Db, Collection } = require('mongodb');
-const { install } = require('../../lib/sinon-mongo');
+const { install } = require('../../src/sinon-mongo');
 
 describe('sinon-mongo', () => {
   before(() => {

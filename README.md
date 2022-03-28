@@ -1,12 +1,14 @@
+# Forked sinon-mongo library by [Daniel](https://github.com/DaniJG) with added typings for sinon.mongo
+
 # sinon-mongo
 
 Extend [sinon.js](https://sinonjs.org/) with stubs for testing code that uses the MongoDB [Node.js driver](https://mongodb.github.io/node-mongodb-native/4.0/index.html)
 
-* [Installation](#installation)
-* [Usage](#usage)
-* [API](#api)
-* [Examples](#examples)
-* [Licence](#license)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API](#api)
+- [Examples](#examples)
+- [Licence](#license)
 
 ## Installation
 
@@ -21,13 +23,15 @@ $ npm install sinon-mongo
 ## Usage
 
 Simply `require('sinon-mongo')` to extend sinon with a `sinon.mongo` object.
+
 ```js
-const sinon = require('sinon');
-require('sinon-mongo');
+const sinon = require("sinon")
+require("sinon-mongo")
 // sinon.mongo is now available!
 ```
 
 Then use `sinon.mongo` to create stubs of various classes in the mongo API.
+
 ```js
 // ---- stub collections ----
 const mockCollection = sinon.mongo.collection({
@@ -66,6 +70,7 @@ mockMongoClient.connect().then(mongoClient => mongoClient.db('myDbName'));
 Use this API to create stubs of the MongoDB [Collection](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html) type.
 
 Every method available in the MongoDB **Collection** type is defaulted as a sinon stub, whose behaviour you can further customise.
+
 ```js
 sinon.mongo.collection(methodStubs[optional])
 
@@ -88,6 +93,7 @@ sinon.assert.calledOnce(mockColletion2.insertOne);
 Use this API to create stubs of the MongoDB [Db](https://mongodb.github.io/node-mongodb-native/4.0/classes/db.html) type.
 
 Every method available in the MongoDB **Db** type is defaulted as a sinon stub, whose behaviour you can further customise.
+
 ```js
 sinon.mongo.db(collectionMap[optional], methodStubs[optional])
 
@@ -115,6 +121,7 @@ mockDb3.listCollections.resolves(...);
 Use this API to create stubs of the MongoDB [MongoClient](https://mongodb.github.io/node-mongodb-native/4.0/classes/mongoclient.html) type.
 
 Every method available in the MongoDB **MongoClient** type is defaulted as a sinon stub, whose behaviour you can further customise.
+
 ```js
 sinon.mongo.mongoClient(databaseMap[optional], methodStubs[optional])
 
@@ -139,51 +146,65 @@ mockMongoClient3.close.resolves();
 ### sinon.mongo.documentArray
 
 When testing code that uses some of the collection operations that return multiple documents, like [find](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#find), you can use this helper API to quickly stub its `toArray()` result, resolving to a promise with the required array.
+
 ```js
-sinon.mongo.documentArray(documents[optional, Array|Object])
+sinon.mongo.documentArray(documents[(optional, Array | Object)])
 
 // code you want to test:
-return collection.find({name: 'foo'}).toArray();
+return collection.find({ name: "foo" }).toArray()
 
 // in test code:
-const mockCollection = sinon.mongo.collection();
+const mockCollection = sinon.mongo.collection()
 mockCollection.find
-  .withArgs({name: 'foo'})
-  .returns(sinon.mongo.documentArray([{the: 'first document'}, {the: 'second document'}]))
+  .withArgs({ name: "foo" })
+  .returns(
+    sinon.mongo.documentArray([
+      { the: "first document" },
+      { the: "second document" },
+    ])
+  )
 
 // You can return an empty array or an array of a single document:
 sinon.mongo.documentArray()
-sinon.mongo.documentArray({the: 'single document'})
+sinon.mongo.documentArray({ the: "single document" })
 ```
 
 The returned `documentArray` stub includes stub methods for `skip`, `limit` and `sort` (all of them sinon stubs themselves) that you can use to test code like:
+
 ```js
-return collection.find({}, {email: 1, name: 1})
+return collection
+  .find({}, { email: 1, name: 1 })
   .skip(30)
   .limit(10)
-  .sort({name: 1})
+  .sort({ name: 1 })
   .toArray()
 ```
 
 ### sinon.mongo.documentStream
 
 When testing code that uses some of the collection operations that return multiple documents, like [find](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#find), you can use this helper API to quickly stub its `stream()` result, returning a **readable stream** that emits the provided documents.
+
 ```js
-sinon.mongo.documentStream(documents[optional, Array|Object])
+sinon.mongo.documentStream(documents[(optional, Array | Object)])
 
 // code you want to test (both are equivalent):
-return collection.find({name: 'foo'});
-return collection.find({name: 'foo'}).stream();
+return collection.find({ name: "foo" })
+return collection.find({ name: "foo" }).stream()
 
 // in test code:
-const mockCollection = sinon.mongo.collection();
+const mockCollection = sinon.mongo.collection()
 mockCollection.find
-  .withArgs({name: 'foo'})
-  .returns(sinon.mongo.documentStream([{the: 'first document'}, {the: 'second document'}]))
+  .withArgs({ name: "foo" })
+  .returns(
+    sinon.mongo.documentStream([
+      { the: "first document" },
+      { the: "second document" },
+    ])
+  )
 
 // You can return an empty stream or an stream that emits a single document:
 sinon.mongo.documentStream()
-sinon.mongo.documentStream({the: 'single document'})
+sinon.mongo.documentStream({ the: "single document" })
 ```
 
 ## Examples
@@ -193,107 +214,106 @@ The following sections include full examples of what might be typical code using
 ### Express controller
 
 Let's say you have an [express](https://expressjs.com/) controller that talks directly to the database through an injected `req.db`:
+
 ```js
-const mongodb = require('mongodb');
+const mongodb = require("mongodb")
 
 module.exports = {
-  get(req, res, next){
-    return req
-      .db
-      .collection('customers')
-      .findOne({_id: mongodb.ObjectId(req.params.id)})
-      .then(cust => res.send(cust))
-      .catch(next);
+  get(req, res, next) {
+    return req.db
+      .collection("customers")
+      .findOne({ _id: mongodb.ObjectId(req.params.id) })
+      .then((cust) => res.send(cust))
+      .catch(next)
   },
-  post(req, res, next){
-    return req
-      .db
-      .collection('customers')
-      .updateOne({_id: mongodb.ObjectId(req.params.id)}, {$set: req.body})
+  post(req, res, next) {
+    return req.db
+      .collection("customers")
+      .updateOne({ _id: mongodb.ObjectId(req.params.id) }, { $set: req.body })
       .then(() => res.sendStatus(204))
-      .catch(next);
-  }
-};
+      .catch(next)
+  },
+}
 ```
 
 Then a test using sinon-mongo could look like:
-```js
-const mongodb = require('mongodb');
-const sinon = require('sinon');
-require('sinon-mongo');
-const sampleController = require('../src/sample-controller');
 
-describe('the sample controller', () => {
-  let mockRequest;
-  let mockResponse;
-  let mockId;
-  let mockCustomerCollection;
+```js
+const mongodb = require("mongodb")
+const sinon = require("sinon")
+require("sinon-mongo")
+const sampleController = require("../src/sample-controller")
+
+describe("the sample controller", () => {
+  let mockRequest
+  let mockResponse
+  let mockId
+  let mockCustomerCollection
   beforeEach(() => {
-    mockId = mongodb.ObjectId();
+    mockId = mongodb.ObjectId()
     mockRequest = {
       params: { id: mockId.toString() },
-      body: { the: 'mock body' },
-    };
+      body: { the: "mock body" },
+    }
     mockResponse = {
       send: sinon.spy(),
-      sendStatus: sinon.spy()
-    };
+      sendStatus: sinon.spy(),
+    }
 
     // inject mock db and collection into the request object
-    mockCustomerCollection = sinon.mongo.collection();
+    mockCustomerCollection = sinon.mongo.collection()
     mockRequest.db = sinon.mongo.db({
-      customers: mockCustomerCollection
-    });
-  });
+      customers: mockCustomerCollection,
+    })
+  })
 
-  it('returns a customer by id', () => {
-    const mockCustomer = {a: 'mock customer'};
+  it("returns a customer by id", () => {
+    const mockCustomer = { a: "mock customer" }
     mockCustomerCollection.findOne
       .withArgs({ _id: mockId })
-      .resolves(mockCustomer);
+      .resolves(mockCustomer)
 
     return sampleController.get(mockRequest, mockResponse).then(() => {
-      sinon.assert.calledWith(mockResponse.send, mockCustomer);
-    });
-  });
+      sinon.assert.calledWith(mockResponse.send, mockCustomer)
+    })
+  })
 
-  it('updates a customer by id', () => {
+  it("updates a customer by id", () => {
     mockCustomerCollection.updateOne
       .withArgs({ _id: mockId }, { $set: mockRequest.body })
-      .resolves();
+      .resolves()
 
     return sampleController.post(mockRequest, mockResponse).then(() => {
-      sinon.assert.calledOnce(mockCustomerCollection.updateOne);
-      sinon.assert.calledWith(mockResponse.sendStatus, 204);
-    });
-  });
-});
+      sinon.assert.calledOnce(mockCustomerCollection.updateOne)
+      sinon.assert.calledWith(mockResponse.sendStatus, 204)
+    })
+  })
+})
 ```
 
 ### Classic Repository
 
 In this example, let's assume we have a classic repository module as:
-```js
-const mongodb = require('mongodb');
 
-module.exports = db => ({
-  findCustomersInOrganization(orgName){
-    return db
-      .collection('customers')
-      .find({ orgName })
-      .toArray();
+```js
+const mongodb = require("mongodb")
+
+module.exports = (db) => ({
+  findCustomersInOrganization(orgName) {
+    return db.collection("customers").find({ orgName }).toArray()
   },
-  updateCustomer(id, updates){
+  updateCustomer(id, updates) {
     return db
-      .collection('customers')
-      .findOneAndUpdate({_id: mongodb.ObjectId(id)}, {$set: updates})
-      .then(res => res.value);
-  }
-});
+      .collection("customers")
+      .findOneAndUpdate({ _id: mongodb.ObjectId(id) }, { $set: updates })
+      .then((res) => res.value)
+  },
+})
 ```
 
 Notice how the db is manually injected, so in order to use this repository module you would `const repo = require('./sample-repository')(dbInstance)`.
 This makes easy to inject a mock db when writing a test:
+
 ```js
 const expect = require('chai').expect;
 const mongodb = require('mongodb');
@@ -343,6 +363,7 @@ describe('the sample repository', () => {
 ```
 
 A typical variant would be using a helper in the repository to retrieve the database, rather than manually injecting it. In that case you would use something like [proxyquire](https://github.com/thlorenz/proxyquire) to write your test and inject the mock db:
+
 ```js
 // in sample-repository.js
 const getDb = require('./some/getdb-utility');
