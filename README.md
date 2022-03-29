@@ -125,7 +125,11 @@ const mockMongoClient = sinon.mongo.mongoClient({
 mockMongoClient.db.withArgs("myDbName").returns({ the: "mock database" })
 // The connect method stub is already setup so it resolves with the mongoClient and can be chained
 mockMongoClient.connect().then((mongoClient) => mongoClient.db("myDbName"))
+```
 
+## Mock transaction (`sinon-mongo-ts` only)
+
+```js
 // Also with Typescript version I added stubbing basic transactions functionality
 const session = mockMongoClient.startSession()
 
@@ -138,6 +142,44 @@ try {
 } finally {
   session.endSession()
 }
+```
+
+## $or query matcher (`sinon-mongo-ts` only)
+
+`$orMatch` takes same arguments as provided to `$or: [...]` query, but without `$or: `
+
+each object in `$orMatch` array must equals searched query object, it won't match partially
+
+if couple "rows" will match, only last one will be returned
+
+```ts
+import { $orMatch } from "sinon-mongo-ts"
+
+const mockUsers = sinon.mongo.collection()
+
+mockUsers.findOne
+  .withArgs(
+    $orMatch([
+      { username: "user", balance: { locked: false, amount: 100 } },
+      { email: "user@email.com" },
+    ])
+  )
+  .resolves("first")
+
+const mockDb = sinon.mongo.db({
+  users: mockUsers,
+})
+
+let query = {
+  $or: [
+    { username: "user4", balance: { locked: true, amount: 400 } },
+    { username: "user", balance: { locked: false, amount: 100 } },
+  ],
+}
+
+let result = await mockDb.collection("users").findOne(query)
+console.log(result)
+// "first"
 ```
 
 ## API

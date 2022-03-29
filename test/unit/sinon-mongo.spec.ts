@@ -1,8 +1,9 @@
 const sinon = require("sinon")
 const expect = require("chai").expect
-const should = require("chai").should
+const should = require("chai").should()
 const { MongoClient, Db, Collection } = require("mongodb")
 const { install } = require("../../src/sinon-mongo")
+import { $orMatch } from "../../src/helpers"
 
 describe("sinon-mongo", () => {
   before(() => {
@@ -18,6 +19,117 @@ describe("sinon-mongo", () => {
       }
     })
   }
+
+  describe("$orMatch helper tests", async () => {
+    it("single object matching", async () => {
+      const mockUsers = sinon.mongo.collection()
+
+      mockUsers.findOne
+        .withArgs(
+          $orMatch([{ username: "user" }, { email: "user@example.com" }])
+        )
+        .resolves("first")
+
+      mockUsers.findOne
+        .withArgs(
+          $orMatch([
+            { username: "foo" },
+            { email: "bar@example.com" },
+            { name: "George" },
+          ])
+        )
+        .resolves("second")
+
+      const mockDb = sinon.mongo.db({
+        users: mockUsers,
+      })
+
+      let query: any = {
+        $or: [{ username: "user" }, { email: "foundation@example.com" }],
+      }
+
+      let result = await mockDb.collection("users").findOne(query)
+
+      result.should.equal("first")
+
+      // Should find first
+      query = {
+        $or: [{ username: "foo" }],
+      }
+
+      result = await mockDb.collection("users").findOne(query)
+
+      result.should.equal("second")
+
+      // Should find second
+      query = {
+        $or: [{ name: "George" }],
+      }
+
+      result = await mockDb.collection("users").findOne(query)
+
+      result.should.equal("second")
+
+      // Should not find any
+      query = {
+        $or: [{ name: "NotExist" }],
+      }
+
+      result = await mockDb.collection("users").findOne(query)
+
+      should.not.exist(result)
+    })
+
+    it("nested objects matching", async () => {
+      const mockUsers = sinon.mongo.collection()
+
+      mockUsers.findOne
+        .withArgs(
+          $orMatch([
+            { username: "user", balance: { locked: false, amount: 100 } },
+            { email: "user@email.com" },
+          ])
+        )
+        .resolves("first")
+
+      const mockDb = sinon.mongo.db({
+        users: mockUsers,
+      })
+
+      let query: any = {
+        $or: [
+          { username: "user", balance: { locked: true, amount: 400 } },
+          { username: "user", balance: { locked: false, amount: 100 } },
+        ],
+      }
+
+      let result = await mockDb.collection("users").findOne(query)
+
+      result.should.equal("first")
+
+      query = {
+        $or: [
+          { email: "user@email.com" },
+          { username: "user", balance: { locked: false, amount: 500 } },
+        ],
+      }
+
+      result = await mockDb.collection("users").findOne(query)
+
+      result.should.equal("first")
+
+      query = {
+        $or: [
+          { email: "notexist@email.com" },
+          { username: "user", balance: { locked: false, amount: 500 } },
+        ],
+      }
+
+      result = await mockDb.collection("users").findOne(query)
+
+      should.not.exist(result)
+    })
+  })
 
   describe("when stubbing MongoClient", () => {
     let mockMongoClient
@@ -52,8 +164,6 @@ describe("sinon-mongo", () => {
         expect(mockMongoClient[methodName].withArgs).to.be.a("function")
       })
     })
-
-    it("stubs the connect method by default to return the mock mongoClient", () => {})
 
     it("stubs the connect method by default to return the mock mongoClient", () => {
       // Arrange
